@@ -189,7 +189,7 @@ export class Sources extends LitElement {
             .filter(source => rowMatchesFilters(source, columns, this.filterState))
             .filter(source => this.countMatches(source.count));
         return html`
-            <h1>DMARC Mail Sources: ${this.sources.length}</h1>
+            <h1>Mail Sources: ${rows.length}</h1>
             <div>
                 ${this.filtered ?
                     html`Filter active! <a class="ml button" href="#/sources">Show all Sources</a>` :
