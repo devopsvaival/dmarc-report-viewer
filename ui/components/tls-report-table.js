@@ -1,17 +1,26 @@
 import { LitElement, html } from "lit";
 import { globalStyle } from "../style.js";
-import { join } from "../utils.js";
+import { join, renderColumnFilterRow, rowMatchesFilters } from "../utils.js";
 
 export class TlsReportTable extends LitElement {
     static styles = [globalStyle];
 
     static properties = {
         reports: { type: Array },
+        filterState: { type: Object },
     };
 
     constructor() {
         super();
         this.reports = [];
+        this.filterState = {};
+    }
+
+    updated(changedProperties) {
+        // Reset column filters whenever a new set of reports is loaded
+        if (changedProperties.has("reports") && Object.keys(this.filterState).length > 0) {
+            this.filterState = {};
+        }
     }
 
     prepareId(id) {
@@ -25,6 +34,35 @@ export class TlsReportTable extends LitElement {
         } else {
             return shortened.substring(0, limit) + "...";
         }
+    }
+
+    problemText(report) {
+        const problems = [];
+        if (report.flagged_sts) problems.push("MTA-STS");
+        if (report.flagged_tlsa) problems.push("TLSA");
+        return problems.length !== 0 ? problems.join(", ") : "None";
+    }
+
+    columns() {
+        return [
+            { key: "id", value: r => r.id },
+            { key: "org", thClass: "xs-hidden", value: r => r.org },
+            { key: "domains", thClass: "sm-hidden", value: r => r.domains },
+            { key: "problems", value: r => this.problemText(r) },
+            { key: "records", thClass: "sm-hidden", value: r => r.records },
+            { key: "begin", thClass: "md-hidden", value: r => new Date(r.date_begin).toLocaleString() },
+            { key: "end", thClass: "md-hidden", value: r => new Date(r.date_end).toLocaleString() },
+        ];
+    }
+
+    onFilterChange(key, value) {
+        const next = { ...this.filterState };
+        if (value) {
+            next[key] = value;
+        } else {
+            delete next[key];
+        }
+        this.filterState = next;
     }
 
     renderProblemBadges(sts, tlsa) {
@@ -49,6 +87,8 @@ export class TlsReportTable extends LitElement {
     }
 
     render() {
+        const columns = this.columns();
+        const rows = this.reports.filter(report => rowMatchesFilters(report, columns, this.filterState));
         return html`
             <table>
                 <tr>
@@ -60,7 +100,8 @@ export class TlsReportTable extends LitElement {
                     <th class="md-hidden">Begin</th>
                     <th class="md-hidden">End</th>
                 </tr>
-                ${this.reports.length !== 0 ? this.reports.map((report) =>
+                ${renderColumnFilterRow(this.reports, columns, this.filterState, (k, v) => this.onFilterChange(k, v))}
+                ${rows.length !== 0 ? rows.map((report) =>
                     html`<tr>
                             <td><a href="#/tls-reports/${report.hash}" title="${report.id}">${this.prepareId(report.id)}</a></td>
                             <td class="xs-hidden"><a href="#/tls-reports?org=${encodeURIComponent(report.org)}">${report.org}</a></td>

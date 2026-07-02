@@ -1,16 +1,26 @@
 import { LitElement, html } from "lit";
 import { globalStyle } from "../style.js";
+import { renderColumnFilterRow, rowMatchesFilters } from "../utils.js";
 
 export class MailTable extends LitElement {
     static styles = [globalStyle];
 
     static properties = {
         mails: { type: Array },
+        filterState: { type: Object },
     };
 
     constructor() {
         super();
         this.mails = [];
+        this.filterState = {};
+    }
+
+    updated(changedProperties) {
+        // Reset column filters whenever a new set of mails is loaded
+        if (changedProperties.has("mails") && Object.keys(this.filterState).length > 0) {
+            this.filterState = {};
+        }
     }
 
     prepareSubject(subject) {
@@ -35,40 +45,97 @@ export class MailTable extends LitElement {
         }
     }
 
-    prepareReportType(mail) {
+    reportTypeText(mail) {
         if (mail.oversized) {
-            return html`<span class="faded">n/a</span>`;
+            return "n/a";
         } else if (mail.xml_files < 1 && mail.json_files < 1) {
-            return html`<span class="badge badge-negative">None</span>`;
+            return "None";
         } else {
             const files = [];
             if (mail.xml_files > 0) files.push("DMARC");
             if (mail.json_files > 0) files.push("TLS");
-            return html`<span class="faded">${files.join(", ")}</span>`;
+            return files.join(", ");
+        }
+    }
+
+    duplicatesText(mail) {
+        if (mail.oversized) {
+            return "n/a";
+        } else if (mail.dmarc_duplicates.length > 0 || mail.tls_duplicates.length) {
+            return "Yes";
+        } else {
+            return "No";
+        }
+    }
+
+    parsingErrorText(mail) {
+        if (mail.oversized) {
+            return "n/a";
+        } else if (mail.xml_parsing_errors > 0 || mail.json_parsing_errors > 0) {
+            return "Yes";
+        } else {
+            return "No";
+        }
+    }
+
+    columns() {
+        return [
+            { key: "subject", value: m => this.prepareSubject(m.subject) },
+            { key: "sender", thClass: "sm-hidden", value: m => m.sender },
+            { key: "date", thClass: "md-hidden", value: m => new Date(m.date * 1000).toLocaleString() },
+            { key: "size", thClass: "xs-hidden", value: m => m.size },
+            { key: "type", thClass: "md-hidden", value: m => this.reportTypeText(m) },
+            { key: "duplicates", thClass: "lg-hidden", value: m => this.duplicatesText(m) },
+            { key: "errors", thClass: "xs-hidden", value: m => this.parsingErrorText(m) },
+        ];
+    }
+
+    onFilterChange(key, value) {
+        const next = { ...this.filterState };
+        if (value) {
+            next[key] = value;
+        } else {
+            delete next[key];
+        }
+        this.filterState = next;
+    }
+
+    prepareReportType(mail) {
+        const text = this.reportTypeText(mail);
+        if (text === "n/a") {
+            return html`<span class="faded">n/a</span>`;
+        } else if (text === "None") {
+            return html`<span class="badge badge-negative">None</span>`;
+        } else {
+            return html`<span class="faded">${text}</span>`;
         }
     }
 
     prepareParsingError(mail) {
-        if (mail.oversized) {
-            return html`<span class="faded">n/a</span>`;
-        } else if (mail.xml_parsing_errors > 0 || mail.json_parsing_errors > 0) {
+        const text = this.parsingErrorText(mail);
+        if (text === "Yes") {
             return html`<span class="badge badge-negative">Yes</span>`;
-        } else {
+        } else if (text === "No") {
             return html`<span class="faded">No</span>`;
+        } else {
+            return html`<span class="faded">n/a</span>`;
         }
     }
 
     prepareDuplicates(mail) {
-        if (mail.oversized) {
-            return html`<span class="faded">n/a</span>`;
-        } else if (mail.dmarc_duplicates.length > 0 || mail.tls_duplicates.length) {
+        const text = this.duplicatesText(mail);
+        if (text === "Yes") {
             return html`<span class="badge badge-warning">Yes</span>`;
-        } else {
+        } else if (text === "No") {
             return html`<span class="faded">No</span>`;
+        } else {
+            return html`<span class="faded">n/a</span>`;
         }
     }
 
     render() {
+        const columns = this.columns();
+        const rows = this.mails.filter(mail => rowMatchesFilters(mail, columns, this.filterState));
         return html`
             <table>
                 <tr>
@@ -80,8 +147,9 @@ export class MailTable extends LitElement {
                     <th class="lg-hidden help" title="Duplicated reports found in Mail?">Duplicates</th>
                     <th class="xs-hidden help" title="Did the mail cause parsing errors?">Errors</th>
                 </tr>
-                ${this.mails.length !== 0 ? this.mails.map((mail) =>
-                    html`<tr> 
+                ${renderColumnFilterRow(this.mails, columns, this.filterState, (k, v) => this.onFilterChange(k, v))}
+                ${rows.length !== 0 ? rows.map((mail) =>
+                    html`<tr>
                         <td><a href="#/mails/${mail.id}">${this.prepareSubject(mail.subject)}</a></td>
                         <td class="sm-hidden"><a href="#/mails?sender=${encodeURIComponent(mail.sender)}">${mail.sender}</a></td>
                         <td class="md-hidden">${new Date(mail.date * 1000).toLocaleString()}</td>

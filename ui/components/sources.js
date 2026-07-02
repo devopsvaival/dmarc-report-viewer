@@ -1,5 +1,29 @@
 import { LitElement, html } from "lit";
 import { globalStyle } from "../style.js";
+import { renderColumnFilterRow, rowMatchesFilters } from "../utils.js";
+
+const ISSUE_LABELS = {
+    "SpfPolicy": "SPF Policy",
+    "SpfAuth": "SPF Auth",
+    "DkimPolicy": "DKIM Policy",
+    "DkimAuth": "DKIM Auth",
+    "StarttlsNotSupported": "No STARTTLS Support",
+    "CertificateHostMismatch": "Certificate Mismatch",
+    "CertificateExpired": "Certificate Expired",
+    "CertificateNotTrusted": "No Certificate Trust",
+    "ValidationFailure": "Validation Failure",
+    "TlsaInvalid": "TLSA Invalid",
+    "DnssecInvalid": "DNSSEC Invalid",
+    "DaneRequired": "DANE Required",
+    "StsPolicyFetchError": "STS Policy Fetch Error",
+    "StsPolicyInvalid": "STS Policy Invalid",
+    "StsWebpkiInvalid": "STS WebPKI Invalid",
+};
+
+const TYPE_LABELS = {
+    "Dmarc": "DMARC",
+    "Tls": "SMTP TLS",
+};
 
 export class Sources extends LitElement {
     static styles = [globalStyle];
@@ -7,6 +31,7 @@ export class Sources extends LitElement {
     static properties = {
         params: { type: Object },
         sources: { type: Array },
+        filterState: { type: Object },
     };
 
     constructor() {
@@ -14,6 +39,7 @@ export class Sources extends LitElement {
         this.params = {};
         this.sources = [];
         this.filtered = false;
+        this.filterState = {};
     }
 
     updated(changedProperties) {
@@ -25,6 +51,7 @@ export class Sources extends LitElement {
     async updateSources() {
         const sourcesResponse = await fetch("sources");
         this.filtered = false;
+        this.filterState = {};
         this.sources = await sourcesResponse.json();
         if (this.params.domain) {
             const lcDomain = this.params.domain.toLowerCase();
@@ -62,46 +89,53 @@ export class Sources extends LitElement {
         }
     }
 
+    issueLabel(issue) {
+        return ISSUE_LABELS[issue] ?? issue;
+    }
+
+    typeLabel(type) {
+        return TYPE_LABELS[type] ?? type;
+    }
+
+    dnsText(dns) {
+        if (dns === undefined) {
+            return "";
+        } else if (dns === null) {
+            return "n/a";
+        } else {
+            return dns;
+        }
+    }
+
+    columns() {
+        return [
+            { key: "ip", value: s => s.ip },
+            { key: "dns", thClass: "md-hidden", value: s => this.dnsText(s.dns) },
+            { key: "count", value: s => s.count },
+            { key: "domain", thClass: "sm-hidden", value: s => s.domain },
+            { key: "types", thClass: "sm-hidden", value: s => s.types.map(t => this.typeLabel(t)) },
+            { key: "issues", thClass: "xs-hidden", value: s => s.issues.map(i => this.issueLabel(i)) },
+        ];
+    }
+
+    onFilterChange(key, value) {
+        const next = { ...this.filterState };
+        if (value) {
+            next[key] = value;
+        } else {
+            delete next[key];
+        }
+        this.filterState = next;
+    }
+
     prepareIssueBadges(issues) {
         // Sort to always have the same badge order
         issues.sort();
 
-        // Convert to nice bades with tool tips
-        return issues.map(issue => {
-            if (issue === "SpfPolicy") {
-                return html`<span class="badge badge-negative">SPF Policy</span> `;
-            } else if (issue === "SpfAuth") {
-                return html`<span class="badge badge-negative">SPF Auth</span> `;
-            } else if (issue === "DkimPolicy") {
-                return html`<span class="badge badge-negative">DKIM Policy</span> `;
-            } else if (issue === "DkimAuth") {
-                return html`<span class="badge badge-negative">DKIM Auth</span> `;
-            } else if (issue === "StarttlsNotSupported") {
-                return html`<span class="badge badge-negative">No STARTTLS Support</span> `;
-            } else if (issue === "CertificateHostMismatch") {
-                return html`<span class="badge badge-negative">Certificate Mismatch</span> `;
-            } else if (issue === "CertificateExpired") {
-                return html`<span class="badge badge-negative">Certificate Expired</span> `;
-            } else if (issue === "CertificateNotTrusted") {
-                return html`<span class="badge badge-negative">No Certificate Trust</span> `;
-            } else if (issue === "ValidationFailure") {
-                return html`<span class="badge badge-negative">Validation Failure</span> `;
-            } else if (issue === "TlsaInvalid") {
-                return html`<span class="badge badge-negative">TLSA Invalid</span> `;
-            } else if (issue === "DnssecInvalid") {
-                return html`<span class="badge badge-negative">DNSSEC Invalid</span> `;
-            } else if (issue === "DaneRequired") {
-                return html`<span class="badge badge-negative">DANE Required</span> `;
-            } else if (issue === "StsPolicyFetchError") {
-                return html`<span class="badge badge-negative">STS Policy Fetch Error</span> `;
-            } else if (issue === "StsPolicyInvalid") {
-                return html`<span class="badge badge-negative">STS Policy Invalid</span> `;
-            } else if (issue === "StsWebpkiInvalid") {
-                return html`<span class="badge badge-negative">STS WebPKI Invalid</span> `;
-            } else {
-                return html`<span class="badge badge-negative">${issue}</span> `;
-            }
-        })
+        // Convert to nice badges with tool tips
+        return issues.map(issue =>
+            html`<span class="badge badge-negative">${this.issueLabel(issue)}</span> `
+        );
     }
 
     prepareTypesBadges(source) {
@@ -129,6 +163,8 @@ export class Sources extends LitElement {
     }
 
     render() {
+        const columns = this.columns();
+        const rows = this.sources.filter(source => rowMatchesFilters(source, columns, this.filterState));
         return html`
             <h1>DMARC Mail Sources</h1>
             <div>
@@ -148,9 +184,10 @@ export class Sources extends LitElement {
                     <th class="sm-hidden help" title="Report Types">Types</th>
                     <th class="xs-hidden help" title="Issues detected in reports from this IP">Issues</th>
                 </tr>
-                ${this.sources.length !== 0 ? this.sources.map((source) =>
-                    html`<tr> 
-                        <td>${source.ip}</a></td>
+                ${renderColumnFilterRow(this.sources, columns, this.filterState, (k, v) => this.onFilterChange(k, v))}
+                ${rows.length !== 0 ? rows.map((source) =>
+                    html`<tr>
+                        <td>${source.ip}</td>
                         <td class="md-hidden">${this.prepareDnsName(source.dns)}</td>
                         <td>${source.count}</td>
                         <td class="sm-hidden"><a href="#/sources?domain=${encodeURIComponent(source.domain)}">${source.domain}</a></td>
@@ -158,7 +195,7 @@ export class Sources extends LitElement {
                         <td class="xs-hidden">${this.prepareIssueBadges(source.issues)}</td>
                     </tr>`
                 ) : html`<tr>
-                        <td colspan="5">No sources found.</td>
+                        <td colspan="6">No sources found.</td>
                     </tr>`
             }
             </table>
