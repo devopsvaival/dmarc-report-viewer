@@ -42,7 +42,7 @@ export class DmarcReportTable extends LitElement {
 
     columns() {
         return [
-            { key: "id", value: r => r.id },
+            { key: "id", filter: false, value: r => r.id },
             { key: "org", thClass: "xs-hidden", value: r => r.org },
             { key: "domain", thClass: "sm-hidden", value: r => r.domain },
             { key: "problems", value: r => this.problemText(r) },

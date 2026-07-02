@@ -40,6 +40,9 @@ export function distinctColumnValues(rows, extractor) {
  */
 export function rowMatchesFilters(row, columns, filterState) {
     for (const column of columns) {
+        if (column.filter === false) {
+            continue;
+        }
         const selected = filterState[column.key];
         if (!selected) {
             continue;
@@ -69,7 +72,9 @@ export function rowMatchesFilters(row, columns, filterState) {
 export function renderColumnFilterRow(allRows, columns, filterState, onChange) {
     return html`
         <tr>
-            ${columns.map(column => html`
+            ${columns.map(column => column.filter === false
+                ? html`<th class="filter ${column.thClass ?? ""}"></th>`
+                : html`
                 <th class="filter ${column.thClass ?? ""}">
                     <select @change="${e => onChange(column.key, e.target.value)}">
                         <option value="" ?selected=${!filterState[column.key]}>All</option>

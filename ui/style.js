@@ -204,3 +204,65 @@ export const globalStyle = css`
         }
     }
 `;
+
+export const reportsFilterStyle = css`
+    .filter-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 25px;
+        align-items: center;
+        margin-top: 15px;
+        padding: 12px 15px;
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+    }
+
+    .filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-label {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .filter-inline {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .button.active {
+        background-color: var(--accent);
+    }
+
+    .button.active:hover {
+        background-color: var(--accent);
+    }
+
+    input[type="date"],
+    .filter-toolbar select {
+        font: inherit;
+        font-size: 14px;
+        color: var(--text);
+        background-color: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 5px;
+        padding: 4px 6px;
+    }
+
+    input[type="date"]:focus,
+    .filter-toolbar select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+    }
+`;

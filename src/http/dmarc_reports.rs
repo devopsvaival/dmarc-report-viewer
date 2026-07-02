@@ -103,6 +103,12 @@ pub struct ReportFilters {
     domain: Option<String>,
     org: Option<String>,
     ip: Option<String>,
+    /// Unix timestamp (seconds); keep reports whose period ends on or after this
+    begin: Option<u64>,
+    /// Unix timestamp (seconds); keep reports whose period begins on or before this
+    end: Option<u64>,
+    /// Keep reports whose record count is strictly greater than this threshold
+    records_gt: Option<usize>,
 }
 
 impl ReportFilters {
@@ -196,6 +202,16 @@ pub async fn list_handler(
             } else {
                 true
             }
+        })
+        .filter(|rh| {
+            // Report period must overlap the requested range.
+            filters.begin.is_none_or(|begin| rh.date_end >= begin)
+                && filters.end.is_none_or(|end| rh.date_begin <= end)
+        })
+        .filter(|rh| {
+            filters
+                .records_gt
+                .is_none_or(|threshold| rh.records > threshold)
         })
         .collect();
     Json(reports)
