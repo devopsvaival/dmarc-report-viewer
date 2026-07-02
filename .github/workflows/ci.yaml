@@ -158,14 +158,14 @@ jobs:
         cd .github/docker/
         docker builder create --name builder
         docker buildx build --builder builder --platform=linux/amd64 --pull .
-    - name: Build & Push Develop Docker Images
+    - name: Build & Push Latest Docker Images
       if: ${{github.ref == 'refs/heads/master'}}
       run: |
         cd .github/docker/
         echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u ${{github.actor}} --password-stdin
         docker buildx build --builder builder --platform=linux/amd64 --pull --push \
-          --tag ghcr.io/${{github.actor}}/dmarc-report-viewer:develop .
-        docker run --rm ghcr.io/${{github.actor}}/dmarc-report-viewer:develop ./dmarc-report-viewer --version
+          --tag ghcr.io/${{github.actor}}/dmarc-report-viewer:latest .
+        docker run --rm ghcr.io/${{github.actor}}/dmarc-report-viewer:latest ./dmarc-report-viewer --version
     - name: Build & Push Release Docker Images
       if: startsWith(github.ref, 'refs/tags/')
       run: |
