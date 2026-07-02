@@ -128,8 +128,8 @@ jobs:
         name: mac-aarch64
         path: target/aarch64-apple-darwin/release/dmarc-report-viewer
   docker_linux:
-    name: Docker (Linux, x86-64, aarch64)
-    needs: [linux_x86_64, linux_aarch64]
+    name: Docker (Linux, x86-64)
+    needs: [linux_x86_64]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -142,20 +142,18 @@ jobs:
     - name: Prepare Binary Artifacts
       run: |
         mv linux-x86_64 .github/docker/linux-amd64
-        mv linux-aarch64 .github/docker/linux-arm64
         chmod +x .github/docker/linux-amd64/dmarc-report-viewer
-        chmod +x .github/docker/linux-arm64/dmarc-report-viewer
     - name: Build Docker Images
       run: |
         cd .github/docker/
         docker builder create --name builder
-        docker buildx build --builder builder --platform=linux/amd64,linux/arm64 --pull .
+        docker buildx build --builder builder --platform=linux/amd64 --pull .
     - name: Build & Push Develop Docker Images
       if: ${{github.ref == 'refs/heads/master'}}
       run: |
         cd .github/docker/
         echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u ${{github.actor}} --password-stdin
-        docker buildx build --builder builder --platform=linux/amd64,linux/arm64 --pull --push \
+        docker buildx build --builder builder --platform=linux/amd64 --pull --push \
           --tag ghcr.io/${{github.actor}}/dmarc-report-viewer:develop .
         docker run --rm ghcr.io/${{github.actor}}/dmarc-report-viewer:develop ./dmarc-report-viewer --version
     - name: Build & Push Release Docker Images
@@ -163,7 +161,7 @@ jobs:
       run: |
         cd .github/docker/
         echo ${{secrets.GITHUB_TOKEN}} | docker login ghcr.io -u ${{github.actor}} --password-stdin
-        docker buildx build --builder builder --platform=linux/amd64,linux/arm64 --pull --push \
+        docker buildx build --builder builder --platform=linux/amd64 --pull --push \
           --tag ghcr.io/${{github.actor}}/dmarc-report-viewer:latest \
           --tag ghcr.io/${{github.actor}}/dmarc-report-viewer:$(cut -d '.' -f 1 <<< "${{github.ref_name}}") \
           --tag ghcr.io/${{github.actor}}/dmarc-report-viewer:$(cut -d '.' -f 1,2 <<< "${{github.ref_name}}") \
