@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>DMARC Report Viewer & Analyzer</title>
+    <title>Vaival DMARC Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:;base64,=" />
     <script src="chart.js"></script>
@@ -26,10 +26,99 @@
         import "./components/about.js";
     </script>
     <style>
+        /* Theme tokens. CSS custom properties cascade into the Lit shadow-DOM
+           components, so the whole UI is themed from this single place.
+           Light theme by default; dark theme applied automatically to match
+           the operating system via prefers-color-scheme. */
+        :root {
+            --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+            --bg: #f7f8fa;
+            --surface: #ffffff;
+            --surface-2: #eef0f4;
+            --text: #1f2430;
+            --text-muted: #6b7280;
+            --border: #e6e8ee;
+            --border-strong: #d7dae2;
+
+            --nav-bg: #1e2233;
+            --nav-text: rgba(255, 255, 255, 0.6);
+            --nav-text-hover: rgba(255, 255, 255, 0.85);
+            --nav-text-active: #ffffff;
+
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --link: #4f46e5;
+            --link-hover: #4338ca;
+
+            --positive: #10b981;
+            --negative: #f43f5e;
+            --warning: #f59e0b;
+            --warning-text: #1f2430;
+            --badge-bg: #6b7280;
+
+            --button-bg: #6b7280;
+            --button-bg-hover: #565d69;
+
+            --row-hover: #f2f3f7;
+            --th-bg: #eef0f4;
+            --th-text: #3b4252;
+
+            --radius: 8px;
+            --shadow: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.06);
+
+            color-scheme: light dark;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1117;
+                --surface: #1a1d27;
+                --surface-2: #171a22;
+                --text: #e6e8ee;
+                --text-muted: #8b93a7;
+                --border: #262a36;
+                --border-strong: #333846;
+
+                --nav-bg: #14171f;
+                --nav-text: rgba(255, 255, 255, 0.55);
+                --nav-text-hover: rgba(255, 255, 255, 0.8);
+                --nav-text-active: #ffffff;
+
+                --accent: #818cf8;
+                --accent-hover: #a5b4fc;
+                --link: #a5b4fc;
+                --link-hover: #c7d2fe;
+
+                --positive: #34d399;
+                --negative: #fb7185;
+                --warning: #fbbf24;
+                --warning-text: #1f2430;
+                --badge-bg: #4b5563;
+
+                --button-bg: #3a4150;
+                --button-bg-hover: #464e5f;
+
+                --row-hover: #21252f;
+                --th-bg: #21252f;
+                --th-text: #c3c9d5;
+
+                --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+            }
+        }
+
         body {
             margin: 0px;
             padding: 0px;
-            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 15.5px;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
     </style>
 </head>

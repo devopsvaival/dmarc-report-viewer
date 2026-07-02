@@ -5,16 +5,18 @@ export class App extends LitElement {
     static styles = [globalStyle, css`
         a, a:visited {
             padding-right: 15px;
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--nav-text);
             text-decoration: none;
+            font-weight: 500;
+            transition: color 0.15s ease;
         }
 
         a:hover {
-            color: rgba(255, 255, 255, 0.75);
+            color: var(--nav-text-hover);
         }
 
         a.active {
-            color: white;
+            color: var(--nav-text-active);
         }
 
         a.right {
@@ -23,8 +25,29 @@ export class App extends LitElement {
         }
 
         nav {
-            background-color: #343a40;
+            background-color: var(--nav-bg);
             padding: 15px;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand {
+            color: var(--nav-text-active);
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            padding-right: 25px;
+        }
+
+        .brand::before {
+            content: "";
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            margin-right: 8px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            vertical-align: middle;
         }
 
         main {
@@ -33,8 +56,9 @@ export class App extends LitElement {
             bottom: 0px;
             left: 0px;
             right: 0px;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
+            background-color: var(--bg);
         }
     `];
 
@@ -123,6 +147,7 @@ export class App extends LitElement {
 
         return html`
             <nav>
+                <span class="brand">Vaival DMARC Viewer</span>
                 <a class="${this.component === "dashboard" ? "active" : ""}" href="#/dashboard">Dashboard</a>
                 <a class="${this.component === "mails" || this.component === "mail" ? "active" : ""}" href="#/mails">Mails</a>
                 <a class="${this.component === "dmarc-reports" || this.component === "dmarc-report" ? "active" : ""}" href="#/dmarc-reports">DMARC<span class="xs-hidden">&nbsp;Reports</span></a>

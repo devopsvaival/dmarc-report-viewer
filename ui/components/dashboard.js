@@ -10,10 +10,11 @@ export class Dashboard extends LitElement {
         }
 
         .module {
-            border: 1px solid #e0e0e0;
-            border-radius: 3px;
-            background-color: #efefef;
-            padding: 5px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 12px;
             text-align: center;
         }
 
@@ -191,6 +192,13 @@ export class Dashboard extends LitElement {
         this.tlsReports = summary.tls.reports;
         this.lastUpdate = summary.last_update;
         this.classesToHide = [];
+
+        // Make chart legend/label text follow the active (light/dark) theme
+        const themeText = getComputedStyle(document.documentElement)
+            .getPropertyValue("--text").trim();
+        if (themeText) {
+            Chart.defaults.color = themeText;
+        }
 
         // Group orgs and domains with very small percentages as "Other"
         summary.dmarc.orgs = this.groupData(summary.dmarc.orgs, 2.0, 7, "Other");
