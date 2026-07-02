@@ -30,9 +30,9 @@ export class About extends LitElement {
         return html`
             <h1>About</h1>
             <p>
-                This application is open source and written in Rust and JavaScript.<br>
+                Vaival DMARC Viewer is written in Rust and JavaScript.<br>
                 You can find the source code, changelog, license and issue tracker on Github:
-                <a href="https://github.com/cry-inc/dmarc-report-viewer" target="_blank">github.com/cry-inc/dmarc-report-viewer</a>
+                <a href="https://github.com/devopsvaival/dmarc-report-viewer" target="_blank">github.com/devopsvaival/dmarc-report-viewer</a>
             </p>
             <p>
                 Version: <b>${this.version}</b><br>

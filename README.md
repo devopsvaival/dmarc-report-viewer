@@ -1,8 +1,8 @@
-# DMARC Report Viewer
-[![Build Status](https://github.com/cry-inc/dmarc-report-viewer/workflows/CI/badge.svg)](https://github.com/cry-inc/dmarc-report-viewer/actions)
+# Vaival DMARC Viewer
+[![Build Status](https://github.com/devopsvaival/dmarc-report-viewer/workflows/CI/badge.svg)](https://github.com/devopsvaival/dmarc-report-viewer/actions)
 [![No Unsafe](https://img.shields.io/badge/unsafe-forbidden-brightgreen.svg)](https://doc.rust-lang.org/nomicon/meet-safe-and-unsafe.html)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Dependencies](https://deps.rs/repo/github/cry-inc/dmarc-report-viewer/status.svg)](https://deps.rs/repo/github/cry-inc/dmarc-report-viewer)
+[![Dependencies](https://deps.rs/repo/github/devopsvaival/dmarc-report-viewer/status.svg)](https://deps.rs/repo/github/devopsvaival/dmarc-report-viewer)
 
 A lightweight standalone [DMARC](https://en.wikipedia.org/wiki/DMARC#Aggregate_reports) and [SMTP TLS](https://en.wikipedia.org/wiki/Simple_Mail_Transfer_Protocol#SMTP_TLS_Reporting) report viewer.
 Ideal for smaller selfhosted mailservers to browse, visualize and analyze the reports.
@@ -52,8 +52,8 @@ Read the [CHANGELOG.md](CHANGELOG.md) file for a list of all released versions a
 
 ## Run with Docker
 The latest versions are automatically published as Docker images in the GitHub container registry.
-You can download the latest release using the command `sudo docker pull ghcr.io/cry-inc/dmarc-report-viewer`.
-Alternatively, you can also pull from Docker Hub: `sudo docker pull cryinc/dmarc-report-viewer`.
+You can download the latest release using the command `sudo docker pull ghcr.io/devopsvaival/dmarc-report-viewer`.
+Alternatively, you can also pull from Docker Hub: `sudo docker pull devopsvaival/dmarc-report-viewer`.
 
 ### Available Docker Tags
 The following tags are available (aside from the versioned tag for all individual releases):
@@ -62,7 +62,7 @@ The following tags are available (aside from the versioned tag for all individua
 
 ## Configuration
 List all available configuration parameters with the corresponding environment variables and default values by running this command:
-`sudo docker run --rm ghcr.io/cry-inc/dmarc-report-viewer ./dmarc-report-viewer --help`.
+`sudo docker run --rm ghcr.io/devopsvaival/dmarc-report-viewer ./dmarc-report-viewer --help`.
 
 You can configure the application with command line arguments or environment variables.
 For the Docker use case, environment variables are recommended.
@@ -78,7 +78,7 @@ Here is an example:
       -e HTTP_SERVER_USER=webui-user \
       -e HTTP_SERVER_PASSWORD=webui-password \
       -p 8080:8080 \
-      ghcr.io/cry-inc/dmarc-report-viewer
+      ghcr.io/devopsvaival/dmarc-report-viewer
 
 ### Application Data
 This application does not store any reports in a database or in any other kind of file.
@@ -120,7 +120,7 @@ You should also persist the certificate caching directory on your host file syst
       -e HTTPS_AUTO_CERT_DOMAIN=dmarc.mymailserver.com \
       -v /host/cert/folder:/certs \
       -p 443:8443 \
-      ghcr.io/cry-inc/dmarc-report-viewer
+      ghcr.io/devopsvaival/dmarc-report-viewer
 
 ### IPv6 Support
 By default the HTTP server will bind to any IPv4 address of the machine.

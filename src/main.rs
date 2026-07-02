@@ -54,7 +54,7 @@ async fn main() -> Result<()> {
 
     // Log app name and version
     let version = env!("CARGO_PKG_VERSION");
-    info!("DMARC Report Analyzer {version}");
+    info!("Vaival DMARC Viewer {version}");
 
     // Inject git hash for logging during Github builds.
     // Other builds, like normal local dev builds do not support this.

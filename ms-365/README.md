@@ -1,5 +1,5 @@
 # Access MS 365 Mail Access with DavMail IMAP Proxy
-This Docker-Compose example shows how to set up DavMail and the DMARC-Report-Viewer
+This Docker-Compose example shows how to set up DavMail and Vaival DMARC Viewer
 together so it possible to read reports from an MS mail account.
 
 ## Instructions
