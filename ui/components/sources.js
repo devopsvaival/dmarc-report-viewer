@@ -1,6 +1,15 @@
 import { LitElement, html } from "lit";
-import { globalStyle } from "../style.js";
+import { globalStyle, reportsFilterStyle } from "../style.js";
 import { renderColumnFilterRow, rowMatchesFilters } from "../utils.js";
+
+const COUNT_FILTERS = [
+    { value: "", label: "Any", test: () => true },
+    { value: "lt100", label: "Less than 100", test: count => count < 100 },
+    { value: "gt100", label: "More than 100", test: count => count > 100 },
+    { value: "gt500", label: "More than 500", test: count => count > 500 },
+    { value: "gt1000", label: "More than 1000", test: count => count > 1000 },
+    { value: "gt10000", label: "More than 10000", test: count => count > 10000 },
+];
 
 const ISSUE_LABELS = {
     "SpfPolicy": "SPF Policy",
@@ -26,12 +35,13 @@ const TYPE_LABELS = {
 };
 
 export class Sources extends LitElement {
-    static styles = [globalStyle];
+    static styles = [globalStyle, reportsFilterStyle];
 
     static properties = {
         params: { type: Object },
         sources: { type: Array },
         filterState: { type: Object },
+        countFilter: { type: String },
     };
 
     constructor() {
@@ -40,6 +50,7 @@ export class Sources extends LitElement {
         this.sources = [];
         this.filtered = false;
         this.filterState = {};
+        this.countFilter = "";
     }
 
     updated(changedProperties) {
@@ -52,6 +63,7 @@ export class Sources extends LitElement {
         const sourcesResponse = await fetch("sources");
         this.filtered = false;
         this.filterState = {};
+        this.countFilter = "";
         this.sources = await sourcesResponse.json();
         if (this.params.domain) {
             const lcDomain = this.params.domain.toLowerCase();
@@ -128,6 +140,15 @@ export class Sources extends LitElement {
         this.filterState = next;
     }
 
+    onCountFilterChange(event) {
+        this.countFilter = event.target.value;
+    }
+
+    countMatches(count) {
+        const filter = COUNT_FILTERS.find(f => f.value === this.countFilter);
+        return filter ? filter.test(count) : true;
+    }
+
     prepareIssueBadges(issues) {
         // Sort to always have the same badge order
         issues.sort();
@@ -164,7 +185,9 @@ export class Sources extends LitElement {
 
     render() {
         const columns = this.columns();
-        const rows = this.sources.filter(source => rowMatchesFilters(source, columns, this.filterState));
+        const rows = this.sources
+            .filter(source => rowMatchesFilters(source, columns, this.filterState))
+            .filter(source => this.countMatches(source.count));
         return html`
             <h1>DMARC Mail Sources: ${this.sources.length}</h1>
             <div>
@@ -174,6 +197,18 @@ export class Sources extends LitElement {
                     <a class="ml button" href="#/sources?type=Dmarc">Only Sources from DMARC Reports</a>
                     <a class="ml button" href="#/sources?type=Tls">Only Sources from SMTP TLS Reports</a>`
                 }
+            </div>
+            <div class="filter-toolbar">
+                <div class="filter-group">
+                    <span class="filter-label">Count:</span>
+                    <select @change="${this.onCountFilterChange}">
+                        ${COUNT_FILTERS.map(filter => html`
+                            <option value="${filter.value}" ?selected="${this.countFilter === filter.value}">
+                                ${filter.label}
+                            </option>
+                        `)}
+                    </select>
+                </div>
             </div>
             <table>
                 <tr>
