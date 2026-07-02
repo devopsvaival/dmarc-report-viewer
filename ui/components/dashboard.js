@@ -30,6 +30,43 @@ export class Dashboard extends LitElement {
             margin-left: 15px;
             margin-right: 15px;
         }
+
+        .chart-legend-container {
+            margin-top: 10px;
+        }
+
+        .chart-legend {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 14px;
+            max-height: 96px;
+            overflow-y: auto;
+        }
+
+        .chart-legend li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .chart-legend-box {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .chart-legend-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
     `];
 
     static properties = {
@@ -40,6 +77,7 @@ export class Dashboard extends LitElement {
         dmarcReports: { type: Number },
         tlsReports: { type: Number },
         lastUpdate: { type: Number },
+        nextUpdate: { type: Number },
         dmarcDomains: { type: Array },
         tlsDomains: { type: Array },
         classesToHide: { type: Array },
@@ -55,6 +93,7 @@ export class Dashboard extends LitElement {
         this.dmarcReports = 0;
         this.tlsReports = 0;
         this.lastUpdate = 0;
+        this.nextUpdate = 0;
         this.dmarcDomains = [];
         this.tlsDomains = [];
         this.filterDomains = [];
@@ -191,6 +230,7 @@ export class Dashboard extends LitElement {
         this.dmarcReports = summary.dmarc.reports;
         this.tlsReports = summary.tls.reports;
         this.lastUpdate = summary.last_update;
+        this.nextUpdate = summary.next_update;
         this.classesToHide = [];
 
         // Make chart legend/label text follow the active (light/dark) theme
@@ -311,6 +351,47 @@ export class Dashboard extends LitElement {
 
         const element = this.renderRoot.querySelector("." + canvasId);
 
+        // Reusable HTML legend container placed directly below the canvas so
+        // legend items can be laid out in a two-column grid at the bottom.
+        let legendEl = this.renderRoot.querySelector("." + canvasId + "_legend");
+        if (!legendEl) {
+            legendEl = document.createElement("div");
+            legendEl.className = canvasId + "_legend chart-legend-container";
+            element.insertAdjacentElement("afterend", legendEl);
+        }
+
+        const htmlLegendPlugin = {
+            id: "htmlLegend",
+            afterUpdate(chart) {
+                while (legendEl.firstChild) legendEl.firstChild.remove();
+                const ul = document.createElement("ul");
+                ul.className = "chart-legend";
+                const items = chart.options.plugins.legend.labels.generateLabels(chart);
+                items.forEach(item => {
+                    const li = document.createElement("li");
+                    li.style.opacity = item.hidden ? "0.4" : "1";
+                    li.onclick = () => {
+                        chart.toggleDataVisibility(item.index);
+                        chart.update();
+                    };
+
+                    const box = document.createElement("span");
+                    box.className = "chart-legend-box";
+                    box.style.background = item.fillStyle;
+
+                    const text = document.createElement("span");
+                    text.className = "chart-legend-label";
+                    text.title = item.text;
+                    text.textContent = item.text;
+
+                    li.appendChild(box);
+                    li.appendChild(text);
+                    ul.appendChild(li);
+                });
+                legendEl.appendChild(ul);
+            }
+        };
+
         const labels = Object.keys(dataMap);
         const data = labels.map(k => dataMap[k]);
 
@@ -347,11 +428,14 @@ export class Dashboard extends LitElement {
                     }
                 },
                 plugins: {
+                    // Native canvas legend is disabled in favour of a custom
+                    // HTML legend rendered below the chart in two columns.
                     legend: {
-                        maxHeight: 70
+                        display: false
                     }
                 }
-            }
+            },
+            plugins: [htmlLegendPlugin]
         });
     }
 
@@ -372,6 +456,7 @@ export class Dashboard extends LitElement {
                 <span>XML Files: <b>${this.xmlFiles}</b></span>
                 <span>JSON Files: <b>${this.jsonFiles}</b></span>
                 <span>Last Update: <b>${new Date(this.lastUpdate * 1000).toLocaleString()}</b></span>
+                ${this.nextUpdate ? html`<span>Next Poll: <b>${new Date(this.nextUpdate * 1000).toLocaleString()}</b></span>` : ""}
             </div>
 
             <div class="module stats">

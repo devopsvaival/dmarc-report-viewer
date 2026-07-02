@@ -55,6 +55,7 @@ pub async fn handler(
             tls: &guard.tls_reports,
         },
         guard.last_update,
+        guard.next_update,
         time_span,
         filters.domain.clone(),
     );
@@ -142,6 +143,10 @@ pub struct Summary {
     /// Unix timestamp with time of last update
     pub last_update: u64,
 
+    /// Unix timestamp with time of the next planned IMAP poll.
+    /// Zero until the first update cycle has scheduled the next one.
+    pub next_update: u64,
+
     /// Information about DMARC reports
     pub dmarc: DmarcSummary,
 
@@ -155,6 +160,7 @@ impl Summary {
         files: Files,
         reports: Reports,
         last_update: u64,
+        next_update: u64,
         time_span: Option<Duration>,
         domain_filter: Option<String>,
     ) -> Self {
@@ -330,6 +336,7 @@ impl Summary {
         Self {
             mails,
             last_update,
+            next_update,
             dmarc,
             tls,
         }

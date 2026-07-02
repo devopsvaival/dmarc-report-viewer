@@ -69,6 +69,10 @@ pub struct AppState {
     /// Time of last update from IMAP inbox as Unix timestamp
     pub last_update: u64,
 
+    /// Time of the next planned IMAP poll as Unix timestamp.
+    /// Zero until the first update cycle has scheduled the next one.
+    pub next_update: u64,
+
     /// Time the last update took in seconds
     pub last_update_duration: f64,
 
@@ -95,6 +99,7 @@ impl AppState {
             dmarc_reports: BTreeMap::new(),
             tls_reports: BTreeMap::new(),
             last_update: 0,
+            next_update: 0,
             xml_files: 0,
             json_files: 0,
             parsing_errors: HashMap::new(),

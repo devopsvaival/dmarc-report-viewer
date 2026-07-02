@@ -61,9 +61,13 @@ pub fn start_bg_task(
                 }
             }
 
-            // Print next update time
+            // Print next update time and expose it to the web frontend
             let next = Local::now() + duration;
             info!("Next update is planned for {next}");
+            {
+                let mut guard = state.lock().await;
+                guard.next_update = next.timestamp().max(0) as u64;
+            }
 
             tokio::select! {
                 _ = tokio::time::sleep(duration) => {},
