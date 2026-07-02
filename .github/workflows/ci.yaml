@@ -29,104 +29,113 @@ jobs:
       with:
         name: linux-x86_64
         path: target/x86_64-unknown-linux-musl/release/dmarc-report-viewer
-  linux_aarch64:
-    name: Linux (aarch64)
-    runs-on: ubuntu-24.04-arm
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Update Rust
-      run: rustup toolchain install stable --profile minimal --no-self-update
-    - name: Install MUSL Toolchain
-      run: rustup target add aarch64-unknown-linux-musl
-    - name: Install MUSL dependencies
-      run: sudo apt-get install musl-tools
-    - name: Enable Rust Caching
-      uses: Swatinem/rust-cache@v2
-    - name: Release Build
-      run: cargo build --release --all --target aarch64-unknown-linux-musl
-    - name: Execute Tests
-      run: cargo test --release --all --target aarch64-unknown-linux-musl
-    - uses: actions/upload-artifact@v6
-      with:
-        name: linux-aarch64
-        path: target/aarch64-unknown-linux-musl/release/dmarc-report-viewer
-  windows_x86_64:
-    name: Windows (x86-64)
-    runs-on: windows-2025
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Install NASM
-      uses: ilammy/setup-nasm@v1
-    - name: Update Rust
-      run: rustup toolchain install stable --profile minimal --no-self-update
-    - name: Enable Rust Caching
-      uses: Swatinem/rust-cache@v2
-    - name: Release Build
-      run: cargo build --release --all
-    - name: Execute Tests
-      run: cargo test --release --all
-    - uses: actions/upload-artifact@v6
-      with:
-        name: windows-x86_64
-        path: target/release/dmarc-report-viewer.exe
-  windows_aarch64:
-    name: Windows (aarch64)
-    runs-on: windows-11-arm
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Update Rust
-      run: rustup toolchain install stable --profile minimal --no-self-update
-    - name: Enable Rust Caching
-      uses: Swatinem/rust-cache@v2
-    - name: Release Build
-      run: cargo build --release --all
-    - name: Execute Tests
-      run: cargo test --release --all
-    - uses: actions/upload-artifact@v6
-      with:
-        name: windows-aarch64
-        path: target/release/dmarc-report-viewer.exe
-  mac_x86_64:
-    name: Mac (x86-64)
-    runs-on: macos-15
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Update Rust
-      run: rustup toolchain install stable --profile minimal --no-self-update
-    - name: Install x64 target
-      run: rustup target add x86_64-apple-darwin
-    - name: Enable Rust Caching
-      uses: Swatinem/rust-cache@v2
-    - name: Release Build
-      run: cargo build --release --all --target x86_64-apple-darwin
-    - name: Execute Tests
-      run: cargo test --release --all --target x86_64-apple-darwin
-    - uses: actions/upload-artifact@v6
-      with:
-        name: mac-x86_64
-        path: target/x86_64-apple-darwin/release/dmarc-report-viewer
-  mac_aarch64:
-    name: Mac (aarch64)
-    runs-on: macos-15
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-    - name: Update Rust
-      run: rustup toolchain install stable --profile minimal --no-self-update
-    - name: Enable Rust Caching
-      uses: Swatinem/rust-cache@v2
-    - name: Release Build
-      run: cargo build --release --all --target aarch64-apple-darwin
-    - name: Execute Tests
-      run: cargo test --release --all --target aarch64-apple-darwin
-    - uses: actions/upload-artifact@v6
-      with:
-        name: mac-aarch64
-        path: target/aarch64-apple-darwin/release/dmarc-report-viewer
+
+  # --- Additional build targets disabled: only the Linux x86-64 Docker image is needed. ---
+  # Uncomment any block below to re-enable that build target.
+  #
+  # linux_aarch64:
+  #   name: Linux (aarch64)
+  #   runs-on: ubuntu-24.04-arm
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v6
+  #   - name: Update Rust
+  #     run: rustup toolchain install stable --profile minimal --no-self-update
+  #   - name: Install MUSL Toolchain
+  #     run: rustup target add aarch64-unknown-linux-musl
+  #   - name: Install MUSL dependencies
+  #     run: sudo apt-get install musl-tools
+  #   - name: Enable Rust Caching
+  #     uses: Swatinem/rust-cache@v2
+  #   - name: Release Build
+  #     run: cargo build --release --all --target aarch64-unknown-linux-musl
+  #   - name: Execute Tests
+  #     run: cargo test --release --all --target aarch64-unknown-linux-musl
+  #   - uses: actions/upload-artifact@v6
+  #     with:
+  #       name: linux-aarch64
+  #       path: target/aarch64-unknown-linux-musl/release/dmarc-report-viewer
+  #
+  # windows_x86_64:
+  #   name: Windows (x86-64)
+  #   runs-on: windows-2025
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v6
+  #   - name: Install NASM
+  #     uses: ilammy/setup-nasm@v1
+  #   - name: Update Rust
+  #     run: rustup toolchain install stable --profile minimal --no-self-update
+  #   - name: Enable Rust Caching
+  #     uses: Swatinem/rust-cache@v2
+  #   - name: Release Build
+  #     run: cargo build --release --all
+  #   - name: Execute Tests
+  #     run: cargo test --release --all
+  #   - uses: actions/upload-artifact@v6
+  #     with:
+  #       name: windows-x86_64
+  #       path: target/release/dmarc-report-viewer.exe
+  #
+  # windows_aarch64:
+  #   name: Windows (aarch64)
+  #   runs-on: windows-11-arm
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v6
+  #   - name: Update Rust
+  #     run: rustup toolchain install stable --profile minimal --no-self-update
+  #   - name: Enable Rust Caching
+  #     uses: Swatinem/rust-cache@v2
+  #   - name: Release Build
+  #     run: cargo build --release --all
+  #   - name: Execute Tests
+  #     run: cargo test --release --all
+  #   - uses: actions/upload-artifact@v6
+  #     with:
+  #       name: windows-aarch64
+  #       path: target/release/dmarc-report-viewer.exe
+  #
+  # mac_x86_64:
+  #   name: Mac (x86-64)
+  #   runs-on: macos-15
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v6
+  #   - name: Update Rust
+  #     run: rustup toolchain install stable --profile minimal --no-self-update
+  #   - name: Install x64 target
+  #     run: rustup target add x86_64-apple-darwin
+  #   - name: Enable Rust Caching
+  #     uses: Swatinem/rust-cache@v2
+  #   - name: Release Build
+  #     run: cargo build --release --all --target x86_64-apple-darwin
+  #   - name: Execute Tests
+  #     run: cargo test --release --all --target x86_64-apple-darwin
+  #   - uses: actions/upload-artifact@v6
+  #     with:
+  #       name: mac-x86_64
+  #       path: target/x86_64-apple-darwin/release/dmarc-report-viewer
+  #
+  # mac_aarch64:
+  #   name: Mac (aarch64)
+  #   runs-on: macos-15
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v6
+  #   - name: Update Rust
+  #     run: rustup toolchain install stable --profile minimal --no-self-update
+  #   - name: Enable Rust Caching
+  #     uses: Swatinem/rust-cache@v2
+  #   - name: Release Build
+  #     run: cargo build --release --all --target aarch64-apple-darwin
+  #   - name: Execute Tests
+  #     run: cargo test --release --all --target aarch64-apple-darwin
+  #   - uses: actions/upload-artifact@v6
+  #     with:
+  #       name: mac-aarch64
+  #       path: target/aarch64-apple-darwin/release/dmarc-report-viewer
+
   docker_linux:
     name: Docker (Linux, x86-64)
     needs: [linux_x86_64]
@@ -139,10 +148,11 @@ jobs:
       uses: actions/checkout@v6
     - name: Download Artifacts
       uses: actions/download-artifact@v8
+      with:
+        name: linux-x86_64
+        path: .github/docker/linux-amd64
     - name: Prepare Binary Artifacts
-      run: |
-        mv linux-x86_64 .github/docker/linux-amd64
-        chmod +x .github/docker/linux-amd64/dmarc-report-viewer
+      run: chmod +x .github/docker/linux-amd64/dmarc-report-viewer
     - name: Build Docker Images
       run: |
         cd .github/docker/
@@ -170,7 +180,7 @@ jobs:
   release:
     name: Release
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [linux_x86_64, linux_aarch64, windows_x86_64, windows_aarch64, mac_x86_64, mac_aarch64, docker_linux]
+    needs: [linux_x86_64, docker_linux]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -179,14 +189,11 @@ jobs:
       uses: actions/checkout@v6
     - name: Download Artifacts
       uses: actions/download-artifact@v8
+      with:
+        name: linux-x86_64
+        path: linux-x86_64
     - name: Pack Artifacts for Release
-      run: |
-        zip -r windows-x86_64.zip windows-x86_64
-        zip -r windows-aarch64.zip windows-aarch64
-        zip -r linux-x86_64.zip linux-x86_64
-        zip -r linux-aarch64.zip linux-aarch64
-        zip -r mac-x86_64.zip mac-x86_64
-        zip -r mac-aarch64.zip mac-aarch64
+      run: zip -r linux-x86_64.zip linux-x86_64
     - name: Publish Release
       uses: softprops/action-gh-release@v2
       with:
@@ -194,9 +201,4 @@ jobs:
         files: |
           CHANGELOG.md
           LICENSE
-          windows-x86_64.zip
-          windows-aarch64.zip
           linux-x86_64.zip
-          linux-aarch64.zip
-          mac-x86_64.zip
-          mac-aarch64.zip
