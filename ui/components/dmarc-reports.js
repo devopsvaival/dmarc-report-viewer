@@ -193,7 +193,7 @@ export class DmarcReports extends LitElement {
 
     render() {
         return html`
-            <h1>DMARC Reports</h1>
+            <h1>DMARC Reports: ${this.reports.length}</h1>
             <div>
                 ${this.filtered ?
                     html`Filter active! <a class="ml button" href="#/dmarc-reports">Show all Reports</a>` :

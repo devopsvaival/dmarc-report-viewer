@@ -166,7 +166,7 @@ export class Sources extends LitElement {
         const columns = this.columns();
         const rows = this.sources.filter(source => rowMatchesFilters(source, columns, this.filterState));
         return html`
-            <h1>DMARC Mail Sources</h1>
+            <h1>DMARC Mail Sources: ${this.sources.length}</h1>
             <div>
                 ${this.filtered ?
                     html`Filter active! <a class="ml button" href="#/sources">Show all Sources</a>` :
