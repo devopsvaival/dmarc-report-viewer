@@ -67,6 +67,10 @@ pub struct MailFilters {
     oversized: Option<bool>,
     errors: Option<bool>,
     duplicates: Option<bool>,
+    /// Unix timestamp (seconds); keep mails received on or after this time
+    begin: Option<i64>,
+    /// Unix timestamp (seconds); keep mails received on or before this time
+    end: Option<i64>,
 }
 
 impl MailFilters {
@@ -128,6 +132,10 @@ pub async fn list_handler(
             } else {
                 true
             }
+        })
+        .filter(|m| {
+            filters.begin.is_none_or(|begin| m.date >= begin)
+                && filters.end.is_none_or(|end| m.date <= end)
         })
         .collect();
     let mails_json = serde_json::to_string(&mails).expect("Failed to serialize JSON");

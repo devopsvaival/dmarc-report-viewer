@@ -1,17 +1,11 @@
 import { LitElement, html } from "lit";
-import { globalStyle } from "../style.js";
-import { reportsFilterStyle } from "../style.js";
+import { globalStyle, reportsFilterStyle } from "../style.js";
+import { dateToUnix, quickRangeDates, renderDateRangeGroup } from "../date-filter.js";
 
 const RECORD_THRESHOLDS = [
     { value: 0, label: "Any" },
     { value: 5, label: "Greater than 5" },
     { value: 10, label: "Greater than 10" },
-];
-
-const QUICK_RANGES = [
-    { days: 3, label: "Last 3 Days" },
-    { days: 7, label: "Last 7 Days" },
-    { days: 14, label: "Last 14 Days (Fortnight)" },
 ];
 
 export class DmarcReports extends LitElement {
@@ -43,36 +37,10 @@ export class DmarcReports extends LitElement {
         }
     }
 
-    /** Format a Date as a local yyyy-mm-dd string for <input type="date">. */
-    formatDateInput(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        return `${year}-${month}-${day}`;
-    }
-
-    /** Convert a yyyy-mm-dd local date string to Unix seconds. */
-    dateToUnix(dateStr, endOfDay = false) {
-        if (!dateStr) {
-            return null;
-        }
-        const [year, month, day] = dateStr.split("-").map(Number);
-        if (!year || !month || !day) {
-            return null;
-        }
-        const date = endOfDay
-            ? new Date(year, month - 1, day, 23, 59, 59, 999)
-            : new Date(year, month - 1, day, 0, 0, 0, 0);
-        return Math.floor(date.getTime() / 1000);
-    }
-
     applyQuickRange(days) {
-        const end = new Date();
-        const begin = new Date();
-        // Include today, so "Last 3 Days" spans today and the two prior days.
-        begin.setDate(begin.getDate() - (days - 1));
-        this.beginDate = this.formatDateInput(begin);
-        this.endDate = this.formatDateInput(end);
+        const { begin, end } = quickRangeDates(days);
+        this.beginDate = begin;
+        this.endDate = end;
         this.activeRange = days;
         this.updateReports();
     }
@@ -133,8 +101,8 @@ export class DmarcReports extends LitElement {
         // Route-driven filters decide whether the "Show all Reports" hint appears.
         const routeFiltered = urlParams.length > 0;
 
-        const beginUnix = this.dateToUnix(this.beginDate, false);
-        const endUnix = this.dateToUnix(this.endDate, true);
+        const beginUnix = dateToUnix(this.beginDate, false);
+        const endUnix = dateToUnix(this.endDate, true);
         if (beginUnix !== null) {
             urlParams.push("begin=" + beginUnix);
         }
@@ -158,22 +126,14 @@ export class DmarcReports extends LitElement {
     renderQuickFilters() {
         return html`
             <div class="filter-toolbar">
-                <div class="filter-group">
-                    <span class="filter-label">Date range:</span>
-                    ${QUICK_RANGES.map(range => html`
-                        <button
-                            class="button sm ${this.activeRange === range.days ? "active" : ""}"
-                            @click="${() => this.applyQuickRange(range.days)}">
-                            ${range.label}
-                        </button>
-                    `)}
-                    <label class="filter-inline">Begin
-                        <input type="date" .value="${this.beginDate}" @change="${this.onBeginInput}">
-                    </label>
-                    <label class="filter-inline">End
-                        <input type="date" .value="${this.endDate}" @change="${this.onEndInput}">
-                    </label>
-                </div>
+                ${renderDateRangeGroup({
+                    activeRange: this.activeRange,
+                    beginDate: this.beginDate,
+                    endDate: this.endDate,
+                    onQuickRange: days => this.applyQuickRange(days),
+                    onBeginInput: e => this.onBeginInput(e),
+                    onEndInput: e => this.onEndInput(e),
+                })}
                 <div class="filter-group">
                     <span class="filter-label">Records:</span>
                     <select @change="${this.onRecordsChange}">
